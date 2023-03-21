@@ -1,57 +1,44 @@
-var speechRecognition = window.webkitSpeechRecognition
+const speechRecognition = window.webkitSpeechRecognition
+const recognition = new speechRecognition()
+const textbox = document.getElementById("textbox")
+const instructions = document.getElementById("instructions")
+const startBtn = document.getElementById("start-btn")
+const stopBtn = document.getElementById("stop-btn")
 
-var recognition = new speechRecognition()
+let content = ''
 
-var textbox = $("#textbox")
+recognition.continuous = false
 
-var instructions = $("#instructions")
-
-var content = ''
-
-recognition.continuous = true
-
-// recognition is started
-
-recognition.onstart = function() {
-
-    instructions.text("Voice Recognition is On")
-
-}
-
-recognition.onspeechend = function() {
-
-    instructions.text("No Activity")
-
-}
-
-recognition.onerror = function() {
-
-    instruction.text("Try Again")
-
-}
-
-recognition.onresult = function(event) {
-
-    var current = event.resultIndex;
-
-    var transcript = event.results[current][0].transcript
-
-
-
-    content += transcript
-
-    textbox.val(content)
-
-}
-
-$("#start-btn").click(function(event) {
-
+const startRecognition = () => {
     recognition.start()
+    startBtn.style.display = "none"
+    stopBtn.style.display = "block"
+};
 
-})
+const stopRecognition = () => {
+    recognition.stop()
+    stopBtn.style.display = "none"
+    startBtn.style.display = "block"
+    instructions.textContent = "Press Start"
+};
 
-textbox.on('input', function() {
+const updateContent = () => content = textbox.value;
 
-    content = $(this).val()
+recognition.onstart = () => instructions.textContent = "Listening"
+recognition.onspeechend = () => instructions.textContent = "Can't hear you. No Activity"
+recognition.onerror = () => {
+    instructions.textContent = "Error Occured"
+    stopRecognition();
+}
 
-})
+recognition.onresult = (event) => {
+
+    const current = event.resultIndex;
+    const transcript = event.results[current][0].transcript
+    content += transcript
+    textbox.value = content;
+}
+
+startBtn.addEventListener('click', startRecognition);
+stopBtn.addEventListener('click', stopRecognition);
+textbox.addEventListener('input', updateContent);
